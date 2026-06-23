@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
 
 import { JobModel } from "../models/job.js"
+import { randomDelay } from "../utils/randomDelay.js"
 
 export class Orchestrator {
   private _jobs = new Map<string, JobModel>()
@@ -39,9 +40,10 @@ export class Orchestrator {
     const startWorker = async () => {
       while (true) {
         const index = nextUrlIndex++
-        const processedURL = job.urls[index]
 
         if (index >= job.urls.length) break
+
+        const processedURL = job.urls[index]
 
         processedURL.status = "IN_PROGRESS"
         processedURL.started_at = new Date().toISOString()
@@ -50,6 +52,8 @@ export class Orchestrator {
           const { ok, status, statusText } = await fetch(processedURL.url, {
             method: "HEAD",
           })
+
+          await randomDelay()
 
           processedURL.http_status = status
 
@@ -60,28 +64,33 @@ export class Orchestrator {
             processedURL.error = statusText
           }
         } catch (error) {
-          console.log("INSIDE CATCH BLOCK")
-          console.log(error)
+          await randomDelay()
+
           processedURL.status = "ERROR"
+
           if (error instanceof Error) {
             processedURL.error = error.message
           }
         } finally {
           processedURL.ended_at = new Date().toISOString()
-          console.log(
-            "Duration is: ",
+          processedURL.duration =
             new Date(processedURL.ended_at).getTime() -
-              new Date(processedURL.started_at).getTime(),
-          )
+            new Date(processedURL.started_at).getTime()
         }
       }
     }
 
-    const startedWorkers = Array.from({ length: 1 }, () => startWorker())
+    const startedWorkers = Array.from({ length: 2 }, () => startWorker())
 
-    // Ждём пока все воркеры прогонят урлы, потом уже ставим статус SUCCESS у джобы
+    // Ждём пока все воркеры прогонят урлы, потом уже ставим статусы для джобы
     await Promise.all(startedWorkers)
 
-    job.status = "SUCCESS"
+    // Если хоть один урл упал ошибкой, то фейлим всю джобу
+    // В ином случае джоба считается успешной
+    if (job.urls.some((url) => url.status === "ERROR")) {
+      job.status = "FAILED"
+    } else {
+      job.status = "COMPLETED"
+    }
   }
 }

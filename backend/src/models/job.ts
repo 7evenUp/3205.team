@@ -4,7 +4,13 @@ import { URLSchema } from "./url.js"
 
 export const JobSchema = z.object({
   jobId: z.string(),
-  status: z.enum(["PENDING", "IN_PROGRESS", "SUCCESS", "ERROR", "CANCELLED"]),
+  status: z.enum([
+    "PENDING",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "FAILED",
+    "CANCELLED",
+  ]),
   created_at: z.iso.datetime(),
   urls: z.array(URLSchema),
 })

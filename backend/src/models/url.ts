@@ -7,6 +7,7 @@ export const URLSchema = z.object({
   error: z.string().optional(),
   started_at: z.iso.datetime().optional(),
   ended_at: z.iso.datetime().optional(),
+  duration: z.number().optional(),
 })
 
 export type URLModel = z.infer<typeof URLSchema>
