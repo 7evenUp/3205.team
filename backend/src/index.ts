@@ -1,30 +1,25 @@
 import express from "express"
-import { randomUUID } from "node:crypto"
 import * as z from "zod"
 
-import { JobModel, JobPayloadSchema } from "./models/job.js"
+import { JobPayloadSchema } from "./models/job.js"
 
-const jobs = new Map<string, JobModel>()
+import { Orchestrator } from "./services/orchestrator.js"
+
+const jobsOrchestrator = new Orchestrator()
 
 const app = express()
 
 app.use(express.json())
 
-app.post("/api/v1/jobs", async (req, res, next) => {
+app.post("/api/v1/jobs", async (req, res) => {
   try {
     const { urls } = JobPayloadSchema.parse(req.body)
 
-    const currentDate = new Date().toISOString()
-    const randomJobId = randomUUID()
+    const jobId = jobsOrchestrator.addJob(urls)
 
-    jobs.set(randomJobId, {
-      created_at: currentDate,
-      jobId: randomJobId,
-      status: "PENDING",
-      urls,
-    })
+    jobsOrchestrator.startProcessing(jobId)
 
-    res.json({ jobId: randomJobId })
+    res.json({ jobId })
   } catch (err) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ message: err.issues })
@@ -41,7 +36,7 @@ app.post("/api/v1/jobs", async (req, res, next) => {
 })
 
 app.get("/api/v1/jobs", (_, res) => {
-  res.json(Object.fromEntries(jobs))
+  res.json(jobsOrchestrator.getJobs())
 })
 
 app.listen(1488, () => {
