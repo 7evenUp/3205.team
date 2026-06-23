@@ -36,7 +36,21 @@ app.post("/api/v1/jobs", async (req, res) => {
 })
 
 app.get("/api/v1/jobs", (_, res) => {
-  res.json(jobsOrchestrator.getJobs())
+  const jobs = jobsOrchestrator.getJobs()
+
+  res.json(jobs)
+})
+
+app.get("/api/v1/jobs/:id", (req, res) => {
+  const jobId = req.params.id
+
+  const job = jobsOrchestrator.getJobById(jobId)
+
+  if (job) {
+    res.json(job)
+  } else {
+    res.status(400).json({ message: `Job with id=${jobId} doesn't exist` })
+  }
 })
 
 app.listen(1488, () => {

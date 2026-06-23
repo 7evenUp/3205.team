@@ -11,7 +11,21 @@ export class Orchestrator {
   }
 
   getJobs() {
-    return Object.fromEntries(this._jobs)
+    // массив с краткой инфой по урлам
+    let jobArray = []
+
+    for (const { jobId, created_at, status, urls } of this._jobs.values()) {
+      jobArray.push({
+        jobId,
+        created_at,
+        status,
+        total_urls: urls.length,
+        success_urls: urls.filter((url) => url.status === "SUCCESS").length,
+        error_urls: urls.filter((url) => url.status === "ERROR").length,
+      })
+    }
+
+    return jobArray
   }
 
   addJob(urls: string[]) {
@@ -85,8 +99,12 @@ export class Orchestrator {
     // Ждём пока все воркеры прогонят урлы, потом уже ставим статусы для джобы
     await Promise.all(startedWorkers)
 
+    // @ts-expect-error typescript думает, что job.status тут всегда в состоянии "IN_PROGRESS"
+    if (job.status === "CANCELLED") return
+
     // Если хоть один урл упал ошибкой, то фейлим всю джобу
     // В ином случае джоба считается успешной
+    // Состояние "CANCELED" проставляется джобе в DELETE ручке
     if (job.urls.some((url) => url.status === "ERROR")) {
       job.status = "FAILED"
     } else {
