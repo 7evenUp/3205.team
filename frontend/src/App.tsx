@@ -1,3 +1,5 @@
+import Jobs from "./components/Jobs"
+
 const App = () => {
   return (
     <div className="min-h-screen w-screen bg-zinc-950 text-white">
@@ -8,7 +10,9 @@ const App = () => {
           </h1>
         </header>
 
-        <main>Основной контейнер</main>
+        <main>
+          <Jobs />
+        </main>
 
         <footer className="border-t-2 border-zinc-950 mt-20 pt-6">
           Просто заглушка
