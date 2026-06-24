@@ -59,6 +59,11 @@ export class Orchestrator {
 
         const processedURL = job.urls[index]
 
+        if (job.status === "CANCELLED") {
+          processedURL.status = "CANCELLED"
+          continue
+        }
+
         processedURL.status = "IN_PROGRESS"
         processedURL.started_at = new Date().toISOString()
 
@@ -90,11 +95,14 @@ export class Orchestrator {
           processedURL.duration =
             new Date(processedURL.ended_at).getTime() -
             new Date(processedURL.started_at).getTime()
+
+          console.log(`Finished processing ${processedURL.url}`)
+          console.log(`Duration for this url is ${processedURL.duration}`)
         }
       }
     }
 
-    const startedWorkers = Array.from({ length: 2 }, () => startWorker())
+    const startedWorkers = Array.from({ length: 1 }, () => startWorker())
 
     // Ждём пока все воркеры прогонят урлы, потом уже ставим статусы для джобы
     await Promise.all(startedWorkers)
@@ -110,5 +118,13 @@ export class Orchestrator {
     } else {
       job.status = "COMPLETED"
     }
+  }
+
+  cancelJob(jobId: string) {
+    const job = this.getJobById(jobId)
+
+    if (!job) return
+
+    job.status = "CANCELLED"
   }
 }

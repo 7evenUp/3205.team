@@ -19,7 +19,7 @@ app.post("/api/v1/jobs", async (req, res) => {
 
     jobsOrchestrator.startProcessing(jobId)
 
-    res.json({ jobId })
+    res.status(201).json({ jobId })
   } catch (err) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ message: err.issues })
@@ -49,7 +49,20 @@ app.get("/api/v1/jobs/:id", (req, res) => {
   if (job) {
     res.json(job)
   } else {
-    res.status(400).json({ message: `Job with id=${jobId} doesn't exist` })
+    res.status(404).json({ message: `Job with id=${jobId} not found` })
+  }
+})
+
+app.delete("/api/v1/jobs/:id", (req, res) => {
+  const jobId = req.params.id
+
+  const job = jobsOrchestrator.getJobById(jobId)
+
+  if (job) {
+    jobsOrchestrator.cancelJob(jobId)
+    res.sendStatus(204)
+  } else {
+    res.status(404).json({ message: `Job with id=${jobId} not found` })
   }
 })
 

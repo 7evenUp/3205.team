@@ -17,4 +17,5 @@ export const JobSchema = z.object({
 export const JobPayloadSchema = z.object({
   urls: z.array(z.httpUrl()).min(1),
 })
+
 export type JobModel = z.infer<typeof JobSchema>
