@@ -71,6 +71,7 @@ export const jobsOrchestrator = {
         try {
           const { ok, status, statusText } = await fetch(processedURL.url, {
             method: "HEAD",
+            signal: AbortSignal.timeout(10_000),
           })
 
           await randomDelay()
@@ -84,9 +85,10 @@ export const jobsOrchestrator = {
             processedURL.error = statusText
           }
         } catch (error) {
-          await randomDelay()
+          console.log("Error inside catch block: ", error)
 
           processedURL.status = "ERROR"
+          processedURL.http_status = 400
 
           if (error instanceof Error) {
             processedURL.error = error.message
@@ -103,7 +105,7 @@ export const jobsOrchestrator = {
       }
     }
 
-    const startedWorkers = Array.from({ length: 1 }, () => startWorker())
+    const startedWorkers = Array.from({ length: 2 }, () => startWorker())
 
     // Ждём пока все воркеры прогонят урлы, потом уже ставим статусы для джобы
     await Promise.all(startedWorkers)
