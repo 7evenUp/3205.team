@@ -3,18 +3,18 @@ import { randomUUID } from "node:crypto"
 import { JobModel } from "../models/job.js"
 import { randomDelay } from "../utils/randomDelay.js"
 
-export class Orchestrator {
-  private _jobs = new Map<string, JobModel>()
+const jobs = new Map<string, JobModel>()
 
-  getJobById(jobId: string) {
-    return this._jobs.get(jobId)
-  }
+export const jobsOrchestrator = {
+  getJobById: (jobId: string) => {
+    return jobs.get(jobId)
+  },
 
-  getJobs() {
+  getJobs: () => {
     // массив с краткой инфой по урлам
     let jobArray = []
 
-    for (const { jobId, created_at, status, urls } of this._jobs.values()) {
+    for (const { jobId, created_at, status, urls } of jobs.values()) {
       jobArray.push({
         jobId,
         created_at,
@@ -26,13 +26,13 @@ export class Orchestrator {
     }
 
     return jobArray
-  }
+  },
 
-  addJob(urls: string[]) {
+  addJob: (urls: string[]) => {
     const currentDate = new Date().toISOString()
     const jobId = randomUUID()
 
-    this._jobs.set(jobId, {
+    jobs.set(jobId, {
       created_at: currentDate,
       jobId,
       status: "PENDING",
@@ -40,10 +40,10 @@ export class Orchestrator {
     })
 
     return jobId
-  }
+  },
 
-  async startProcessing(jobId: string) {
-    const job = this.getJobById(jobId)
+  startProcessing: async (jobId: string) => {
+    const job = jobs.get(jobId)
 
     if (!job) return
 
@@ -61,6 +61,7 @@ export class Orchestrator {
 
         if (job.status === "CANCELLED") {
           processedURL.status = "CANCELLED"
+          console.log(`Cancelling url processing for ${processedURL.url}`)
           continue
         }
 
@@ -118,13 +119,13 @@ export class Orchestrator {
     } else {
       job.status = "COMPLETED"
     }
-  }
+  },
 
-  cancelJob(jobId: string) {
-    const job = this.getJobById(jobId)
+  cancelJob: (jobId: string) => {
+    const job = jobs.get(jobId)
 
     if (!job) return
 
     job.status = "CANCELLED"
-  }
+  },
 }
