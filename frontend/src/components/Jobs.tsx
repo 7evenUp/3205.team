@@ -2,9 +2,16 @@ import { useMemo, useState } from "react"
 import { Www } from "iconoir-react"
 
 import { useAddJobMutation, useGetJobsQuery } from "../redux/api/jobs"
+import { useAppDispatch, useAppSelector } from "../redux/hooks"
+import { setActiveJob } from "../redux/slices/activeJob"
+
+import { cn } from "../lib/cn"
 
 const Jobs = () => {
   const [input, setInput] = useState("")
+
+  const dispatch = useAppDispatch()
+  const activeJobId = useAppSelector((state) => state.activeJob.jobId)
 
   const {
     data: jobsData,
@@ -19,6 +26,10 @@ const Jobs = () => {
     return jobsData
   }, [jobsData])
 
+  const onJobClick = (jobId: string) => {
+    dispatch(setActiveJob({ jobId }))
+  }
+
   const onButtonClick = async () => {
     if (isAddLoading) return
 
@@ -27,8 +38,9 @@ const Jobs = () => {
       .map((line) => line.trim())
       .filter((line) => line !== "")
 
-    const jobId = await mutate({ urls }).unwrap()
-    console.log(jobId)
+    const { jobId } = await mutate({ urls }).unwrap()
+
+    dispatch(setActiveJob({ jobId }))
   }
 
   return (
@@ -56,9 +68,16 @@ const Jobs = () => {
           "No jobs created yet"
         ) : (
           jobs.map((job) => (
-            <div className="p-4 w-full rounded-lg bg-zinc-800" key={job.jobId}>
+            <button
+              key={job.jobId}
+              className={cn(
+                "p-4 w-full rounded-lg bg-zinc-800 active:opacity-80",
+                job.jobId === activeJobId && "bg-indigo-900",
+              )}
+              onClick={() => onJobClick(job.jobId)}
+            >
               jobId: {job.jobId}
-            </div>
+            </button>
           ))
         )}
       </div>

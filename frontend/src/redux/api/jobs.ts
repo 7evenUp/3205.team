@@ -1,5 +1,7 @@
 import { api } from "./core"
 
+import type { Job } from "../../types/job"
+
 interface JobsResponse {
   jobId: string
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED" | "CANCELLED"
@@ -7,14 +9,6 @@ interface JobsResponse {
   total_urls: number
   success_urls: number
   error_urls: number
-}
-
-interface CreateJobResponse {
-  jobId: string
-}
-
-interface CreateJobPayload {
-  urls: string[]
 }
 
 const jobsApi = api.injectEndpoints({
@@ -26,7 +20,13 @@ const jobsApi = api.injectEndpoints({
       }),
       providesTags: ["Jobs"],
     }),
-    addJob: build.mutation<CreateJobResponse, CreateJobPayload>({
+    getJobById: build.query<Job, { jobId: string }>({
+      query: ({ jobId }) => ({
+        url: `jobs/${jobId}`,
+        method: "GET",
+      }),
+    }),
+    addJob: build.mutation<{ jobId: string }, { urls: string[] }>({
       query: (body) => ({
         url: "jobs",
         method: "POST",
@@ -34,8 +34,20 @@ const jobsApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Jobs"],
     }),
+    cancelJob: build.mutation<void, { jobId: string }>({
+      query: ({ jobId }) => ({
+        url: `jobs/${jobId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Jobs"],
+    }),
   }),
   overrideExisting: false,
 })
 
-export const { useGetJobsQuery, useAddJobMutation } = jobsApi
+export const {
+  useGetJobsQuery,
+  useGetJobByIdQuery,
+  useAddJobMutation,
+  useCancelJobMutation,
+} = jobsApi
