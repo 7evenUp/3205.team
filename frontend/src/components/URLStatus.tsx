@@ -11,7 +11,7 @@ import type { IURLStatus } from "../types/url"
 const URLStatus = ({ status }: { status: IURLStatus }) => {
   if (status === "PENDING") return <PauseSolid />
   if (status === "IN_PROGRESS")
-    return <Hourglass className="text-cyan-300 animate-spin" />
+    return <Hourglass className="animate-spin text-cyan-300" />
   if (status === "SUCCESS")
     return <CheckCircleSolid className="text-green-500" />
   if (status === "ERROR")

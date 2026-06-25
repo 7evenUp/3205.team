@@ -2,7 +2,7 @@ import { api } from "./core"
 
 import type { Job } from "../../types/job"
 
-interface JobsResponse {
+export interface JobsResponse {
   jobId: string
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED" | "CANCELLED"
   created_at: string
