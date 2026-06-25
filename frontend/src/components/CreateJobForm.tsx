@@ -6,6 +6,8 @@ import { setActiveJob } from "../redux/slices/activeJob"
 
 import Button from "../shared/ui/Button"
 
+import { cn } from "../lib/cn"
+
 const PREDEFINED_URLS = [
   "https://google.com",
   "https://github.com",
@@ -24,18 +26,19 @@ const PREDEFINED_URLS = [
 const CreateJobForm = () => {
   const [input, setInput] = useState("")
 
-  const [mutate, { isLoading: isAddLoading }] = useAddJobMutation()
+  const [addJob, { isLoading: isAddLoading, error }] = useAddJobMutation()
   const dispatch = useAppDispatch()
 
   const onStartClick = async () => {
     if (isAddLoading) return
+    if (input.trim().length === 0) return
 
     const urls = input
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line !== "")
 
-    const { jobId } = await mutate({ urls }).unwrap()
+    const { jobId } = await addJob({ urls }).unwrap()
 
     dispatch(setActiveJob({ jobId }))
   }
@@ -48,12 +51,23 @@ const CreateJobForm = () => {
     <div className="flex gap-10 rounded-[48px] bg-zinc-950 p-8">
       <div className="flex flex-col items-start justify-center gap-2">
         <h2 className="text-xl font-medium">Создание задания</h2>
-        <textarea
-          className="min-h-40 w-sm rounded-2xl border-0 bg-zinc-900 p-4 outline-none"
-          value={input}
-          onChange={(evt) => setInput(evt.currentTarget.value)}
-          placeholder="Введите список URL, каждый - с новой строки"
-        />
+        <div className="flex flex-col gap-2">
+          <textarea
+            className={cn(
+              "min-h-40 w-sm rounded-2xl border-0 bg-zinc-900 p-4 outline-none",
+              error && "bg-red-600/10 ring ring-red-600/40"
+            )}
+            value={input}
+            onChange={(evt) => setInput(evt.currentTarget.value)}
+            placeholder="Введите список URL, каждый - с новой строки"
+          />
+          {error && (
+            <span className="max-w-sm text-sm font-medium text-red-600">
+              Произошла ошибка. Убедитесь что каждый URL находится на отдельной
+              строке
+            </span>
+          )}
+        </div>
         <Button
           className="mt-2 w-full"
           onClick={onStartClick}
