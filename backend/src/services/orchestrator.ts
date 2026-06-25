@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto"
 import { JobModel } from "../models/job.js"
 import { randomDelay } from "../utils/randomDelay.js"
 
+const AMOUNT_OF_WORKERS = 5
+
 const jobs = new Map<string, JobModel>()
 
 export const jobsOrchestrator = {
@@ -105,7 +107,9 @@ export const jobsOrchestrator = {
       }
     }
 
-    const startedWorkers = Array.from({ length: 2 }, () => startWorker())
+    const startedWorkers = Array.from({ length: AMOUNT_OF_WORKERS }, () =>
+      startWorker(),
+    )
 
     // Ждём пока все воркеры прогонят урлы, потом уже ставим статусы для джобы
     await Promise.all(startedWorkers)

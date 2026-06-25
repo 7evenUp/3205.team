@@ -1,75 +1,77 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Клиентская часть приложения на React, TypeScript, Vite, Redux Toolkit Query и Tailwind CSS.
 
-Currently, two official plugins are available:
+## Запуск
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+После запуска приложение доступно по адресу `http://localhost:5173/`.
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x"
-import reactDom from "eslint-plugin-react-dom"
+## Структура проекта
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+frontend/
+|-- public/                 # Статические файлы, которые Vite копирует как есть
+|-- src/                    # Исходный код приложения
+|   |-- components/         # React-компоненты экранов и виджетов
+|   |-- lib/                # Небольшие общие утилиты
+|   |-- redux/              # Store, RTK Query API и локальные slices
+|   |-- shared/ui/          # Переиспользуемые UI-компоненты
+|   |-- types/              # Общие TypeScript-типы данных
+|   |-- App.tsx             # Корневой компонент интерфейса
+|   |-- main.tsx            # Точка входа React-приложения
+|   `-- index.css           # Глобальные стили и подключение Tailwind
+|-- index.html              # HTML-шаблон Vite
+|-- package.json            # Скрипты, зависимости и метаданные пакета
+|-- pnpm-lock.yaml          # Зафиксированные версии зависимостей
+|-- vite.config.ts          # Конфигурация Vite
+|-- eslint.config.js        # Конфигурация ESLint
+|-- .prettierrc             # Конфигурация Prettier
+`-- tsconfig*.json          # Конфигурации TypeScript
 ```
+
+## Основные файлы и папки
+
+### `public/`
+
+- `favicon.png` — иконка сайта.
+- `icons.svg` — SVG-спрайт или набор статических иконок.
+
+### `src/components/`
+
+- `CreateJobForm.tsx` — форма создания задания: принимает список URL, отправляет их на API и делает созданное задание активным.
+- `JobStatus.tsx` — отображает статус задания.
+- `URLStatus.tsx` — отображает статус отдельного URL.
+- `Providers.tsx` — подключает Redux store к React-приложению.
+- `ActiveJob/` — виджет активного задания:
+  - `index.tsx` — загружает активное задание, периодически обновляет его состояние и позволяет отменить обработку.
+  - `TableOfUrls.tsx` — таблица URL внутри активного задания.
+- `Jobs/` — список созданных заданий:
+  - `index.tsx` — получает задания с API, сортирует их и выводит список.
+  - `JobItem.tsx` — строка одного задания в списке.
+
+### `src/redux/`
+
+- `store.ts` — создает Redux store, подключает RTK Query middleware и экспортирует типы `RootState` и `AppDispatch`.
+- `hooks.ts` — типизированные хуки для работы с Redux.
+- `api/core.ts` — базовая настройка RTK Query и адрес API `http://localhost:1488/api/v1`.
+- `api/jobs.ts` — endpoints для заданий: список, получение по ID, создание и отмена.
+- `slices/activeJob.ts` — хранит ID текущего активного задания.
+
+### `src/shared/ui/`
+
+- `Button.tsx` — общий компонент кнопки.
+- `Popover.tsx` — общий компонент всплывающего меню на базе `@base-ui/react`.
+
+### `src/types/`
+
+- `job.ts` — типы задания и его статусов.
+- `url.ts` — типы обработанного URL и его статусов.
+
+### `src/lib/`
+
+- `cn.ts` — утилита для объединения CSS-классов через `clsx` и `tailwind-merge`.
